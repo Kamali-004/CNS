@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA Encryption and Decryption</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>RSA Encryption and Decryption</h1>
+    
+    <div>
+        <label for="p">Enter Prime Number p: </label>
+        <input type="number" id="p" value="61" min="2">
+    </div>
+    <div>
+        <label for="q">Enter Prime Number q: </label>
+        <input type="number" id="q" value="53" min="2">
+    </div>
+    <div>
+        <label for="plaintext">Enter Plaintext (Number): </label>
+        <input type="number" id="plaintext" value="42">
+    </div>
+    <button onclick="performRSA()">Perform RSA Encryption and Decryption</button>
+
+    <div class="output" id="output"></div>
+
+    <script>
+        // Helper function to compute (base^exponent) % modulus
+        function powerMod(base, exponent, modulus) {
+            let result = 1;
+            while (exponent > 0) {
+                if (exponent % 2 === 1) {
+                    result = (result * base) % modulus;
+                }
+                base = (base * base) % modulus;
+                exponent = Math.floor(exponent / 2);
+            }
+            return result;
+        }
+
+        // Function to calculate the greatest common divisor
+        function gcd(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        // Function to compute the modular inverse of a mod m
+        function modInverse(a, m) {
+            let m0 = m, y = 0, x = 1;
+            if (m === 1) return 0;
+            while (a > 1) {
+                let q = Math.floor(a / m);
+                let t = m;
+                m = a % m;
+                a = t;
+                t = y;
+                y = x - q * y;
+                x = t;
+            }
+            if (x < 0) x += m0;
+            return x;
+        }
+
+        // RSA Algorithm for Encryption and Decryption
+        function performRSA() {
+            // Get user input values for p, q, and plaintext
+            let p = parseInt(document.getElementById("p").value);
+            let q = parseInt(document.getElementById("q").value);
+            let plaintext = parseInt(document.getElementById("plaintext").value);
+
+            // Step 1: Generate public and private keys
+            let n = p * q;  // Compute n = p * q
+            let phi = (p - 1) * (q - 1);  // Euler's Totient function phi(n)
+
+            // Choose e such that 1 < e < phi(n) and gcd(e, phi(n)) = 1
+            let e = 17;  // Public exponent e (often small like 3 or 17)
+
+            // Compute d such that e * d ≡ 1 (mod phi(n)) (modular inverse of e)
+            let d = modInverse(e, phi);
+
+            // Step 2: Encryption
+            let ciphertext = powerMod(plaintext, e, n);  // c = m^e mod n
+
+            // Step 3: Decryption
+            let decryptedText = powerMod(ciphertext, d, n);  // m = c^d mod n
+
+            // Display results
+            let output = `
+                <h3>RSA Key Generation</h3>
+                <p><b>Prime (p):</b> ${p}</p>
+                <p><b>Prime (q):</b> ${q}</p>
+                <p><b>Public Key (e, n):</b> (${e}, ${n})</p>
+                <p><b>Private Key (d, n):</b> (${d}, ${n})</p>
+
+                <h3>Encryption and Decryption Process</h3>
+                <p><b>Plaintext:</b> ${plaintext}</p>
+                <p><b>Encrypted (Ciphertext):</b> ${ciphertext}</p>
+                <p><b>Decrypted Text:</b> ${decryptedText}</p>
+            `;
+
+            document.getElementById("output").innerHTML = output;
+        }
+    </script>
+</body>
+</html>

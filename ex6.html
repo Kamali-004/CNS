@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffie-Hellman Key Exchange</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .output {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Diffie-Hellman Key Exchange</h1>
+
+    <div>
+        <label for="prime">Enter Prime (p): </label>
+        <input type="number" id="prime" value="23" min="2">
+    </div>
+    <div>
+        <label for="base">Enter Base (g): </label>
+        <input type="number" id="base" value="5" min="2">
+    </div>
+    <div>
+        <label for="message">Enter Message (Number): </label>
+        <input type="number" id="message" value="42">
+    </div>
+    <button onclick="performDiffieHellman()">Perform Diffie-Hellman</button>
+
+    <div class="output" id="output"></div>
+
+    <script>
+        // Function to calculate (base^exponent) % modulus using efficient modular exponentiation
+        function powerMod(base, exponent, modulus) {
+            let result = 1;
+            while (exponent > 0) {
+                if (exponent % 2 === 1) {
+                    result = (result * base) % modulus;
+                }
+                base = (base * base) % modulus;
+                exponent = Math.floor(exponent / 2);
+            }
+            return result;
+        }
+
+        // Function to simulate XOR encryption and decryption (simple symmetric encryption)
+        function xorEncryptDecrypt(message, key) {
+            return message ^ key;
+        }
+
+        // Perform Diffie-Hellman key exchange
+        function performDiffieHellman() {
+            // Get prime p, base g, and message input
+            let p = parseInt(document.getElementById("prime").value);
+            let g = parseInt(document.getElementById("base").value);
+            let message = parseInt(document.getElementById("message").value);
+
+            // Simulate Alice's and Bob's private keys
+            let a = Math.floor(Math.random() * (p - 1)) + 1;  // Alice's private key (random number)
+            let b = Math.floor(Math.random() * (p - 1)) + 1;  // Bob's private key (random number)
+
+            // Compute public keys
+            let A = powerMod(g, a, p);  // Alice's public key: A = g^a % p
+            let B = powerMod(g, b, p);  // Bob's public key: B = g^b % p
+
+            // Compute shared secret using each other's public keys
+            let secretAlice = powerMod(B, a, p);  // Alice computes S = B^a % p
+            let secretBob = powerMod(A, b, p);  // Bob computes S = A^b % p
+
+            // Encrypt and decrypt the message using the shared secret
+            let encryptedMessage = xorEncryptDecrypt(message, secretAlice);  // Encrypt with shared secret
+            let decryptedMessage = xorEncryptDecrypt(encryptedMessage, secretAlice);  // Decrypt with the same shared secret
+
+            // Display the results
+            let output = `
+                <h3>Diffie-Hellman Key Exchange</h3>
+                <p><b>Prime (p):</b> ${p}</p>
+                <p><b>Base (g):</b> ${g}</p>
+                <p><b>Alice's Private Key (a):</b> ${a}</p>
+                <p><b>Bob's Private Key (b):</b> ${b}</p>
+                <p><b>Alice's Public Key (A):</b> ${A}</p>
+                <p><b>Bob's Public Key (B):</b> ${B}</p>
+                <p><b>Alice's Shared Secret:</b> ${secretAlice}</p>
+                <p><b>Bob's Shared Secret:</b> ${secretBob}</p>
+                
+                <h3>Encryption and Decryption</h3>
+                <p><b>Original Message:</b> ${message}</p>
+                <p><b>Encrypted Message:</b> ${encryptedMessage}</p>
+                <p><b>Decrypted Message:</b> ${decryptedMessage}</p>
+            `;
+
+            document.getElementById("output").innerHTML = output;
+        }
+    </script>
+</body>
+</html>
